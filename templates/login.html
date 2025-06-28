@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>the_Wireframe_l0gin</title>
+    <style>
+        body {
+            background: {{ theme.bg }};
+            color: {{ theme.fg }};
+            font-family: monospace;
+            text-align: center;
+            padding-top: 350px;
+        }
+        input {
+            padding: 5px;
+            border: 1px solid {{ theme.fg }};
+            margin: 5px;
+            background: {{ theme.bg }};
+            color: {{ theme.fg }};
+            font-family: monospace;
+        }
+        input::placeholder {
+            color: {{ theme.fg }};
+            opacity: 0.7;
+        }
+        input[type="submit"] {
+            cursor: pointer;
+            background: {{ theme.bg }};
+            color: {{ theme.fg }};
+            border: 1px solid {{ theme.fg }};
+            transition: background-color 0.3s, color 0.3s;
+        }
+        input[type="submit"]:hover {
+            background: {{ theme.fg }};
+            color: {{ theme.bg }};
+        }
+        .error {
+            color: {{ theme.fg }};
+            margin-top: 10px;
+        }
+        
+        #timer {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+    </style>
+    <script>
+        let remaining = {{ remaining_time|round }}; // Tempo rimasto in secondi (passato dal backend)
+
+        function startTimer() {
+            const timerDisplay = document.getElementById("timer");
+            const interval = setInterval(() => {
+                const seconds = remaining;
+                timerDisplay.textContent = `Tempo rimasto: ${seconds}s`;
+
+                if (remaining <= 0) {
+                    clearInterval(interval);
+                    document.body.innerHTML = ''; // autodistrugge la pagina
+                    window.location.href = '/';  // torna alla pagina quiz
+                }
+                remaining--;
+            }, 1000);
+        }
+
+        window.onload = startTimer;
+    </script>
+</head>
+<body>
+    <div id="timer">Tempo rimasto: {{ remaining_time|round }}s</div>
+    <form method="POST">
+        <label>Password:</label>
+        <input type="text" name="password" required placeholder=" ">
+        <input type="submit" value="Accedi">
+    </form>
+    {% if error %}
+        <div class="error">Password errata, ritenta.</div>
+    {% endif %}
+</body>
+</html>

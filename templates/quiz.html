@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>the_Wireframe_l0gin</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            background: {{ theme.bg }};
+            color: {{ theme.fg }};
+            font-family: monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        body {
+            max-width: 720px;
+            width: 100%;
+            padding: 0 20px;
+            box-sizing: border-box;
+            flex-direction: column;
+        }
+
+        #chat {
+            width: 100%;
+            max-width: 720px;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 10px 5px;
+            margin: 0 0 5px 0;
+            border: 1px solid {{ theme.fg }};
+            box-sizing: border-box;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+        }
+
+        .message {
+            margin: 6px 0;
+            color: {{ theme.fg }};
+        }
+
+        .w0-message strong {
+            font-weight: bold;
+            color: {{ theme.fg }};
+        }
+
+        .user-message strong {
+            font-weight: bold;
+            color: {{ theme.fg }};
+        }
+
+        .user-message {
+            text-align: left;
+        }
+
+        form {
+            width: 100%;
+            display: flex;
+            gap: 5px;
+            margin: 0;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 8px;
+            font-family: monospace;
+            font-size: 1rem;
+            border: 1px solid {{ theme.fg }};
+            box-sizing: border-box;
+            background: {{ theme.bg }};
+            color: {{ theme.fg }};
+        }
+
+        input[disabled] {
+            background-color: #f0f0f0;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        button {
+            padding: 8px 12px;
+            font-family: monospace;
+            font-size: 1rem;
+            border: 1px solid {{ theme.fg }};
+            background: {{ theme.bg }};
+            color: {{ theme.fg }};
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background: #f0f0f0;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        button:hover:enabled {
+            background: {{ theme.fg }};
+            color: {{ theme.bg }};
+        }
+    </style>
+</head>
+<body>
+
+    <div id="chat"></div>
+
+    <form id="chat-form" method="POST" action="/quiz" autocomplete="off">
+        <input type="text" id="user-input" name="user_input" required autofocus autocomplete="off" />
+        <button type="submit" id="submit-button">Invia</button>
+
+        <input type="hidden" name="name" id="name" />
+        <input type="hidden" name="year" id="year" />
+        <input type="hidden" name="fear" id="fear" />
+    </form>
+
+    <script>
+        // Il tuo script originale rimane invariato
+        const chat = document.getElementById('chat');
+        const form = document.getElementById('chat-form');
+        const input = document.getElementById('user-input');
+        const submitButton = document.getElementById('submit-button');
+
+        const questionsVariations = [
+            ["Come ti chiami?", "Qual è il tuo nome?", "Mi dici come ti chiami?", "Posso sapere il tuo nome?"],
+            ["Ottimo, invece il tuo anno di nascita?", "Adesso voglio sapere il tuo anno di nascita", "Anno di nascita?", "Ok, ora il tuo anno di nascita"],
+            ["Qual è la tua più grande paura? rispondimi con solo una parola", "C'è qualcosa che temi particolarmente? rispondi solo con una parola", "Qual è la cosa che ti spaventa di più? rispondimi con solo una parola", "Qual'è la tua fobia più grande? rispondi con solo una parola"]
+        ];
+
+        function getRandomQuestion(index) {
+            const arr = questionsVariations[index];
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        let currentQuestion = 0;
+        const answers = {};
+
+        function addMessage(text, sender = 'w0') {
+            const div = document.createElement('div');
+            div.className = 'message ' + (sender === 'w0' ? 'w0-message' : 'user-message');
+            div.innerHTML = `<strong>${sender === 'w0' ? 'W0' : 'Tu'}:</strong> ${text.replace(/\n/g, '<br>')}`;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function disableInput(disabled) {
+            input.disabled = disabled;
+            submitButton.disabled = disabled;
+        }
+
+        function showTypingDots() {
+            disableInput(true);
+
+            const dots = document.createElement('div');
+            dots.className = 'message w0-message';
+            dots.id = 'typing-dots';
+            dots.innerHTML = `<strong>W0:</strong> <span id="dots">.</span>`;
+            chat.appendChild(dots);
+            chat.scrollTop = chat.scrollHeight;
+
+            let count = 1;
+            const interval = setInterval(() => {
+                const span = document.getElementById('dots');
+                if (span) {
+                    span.textContent = '.'.repeat(count);
+                    count = (count % 3) + 1;
+                }
+            }, 400);
+            return interval;
+        }
+
+        async function typeWriterEffect(text, speed = 50) {
+            disableInput(true);
+
+            const div = document.createElement('div');
+            div.className = 'message w0-message';
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+
+            let i = 0;
+            div.innerHTML = `<strong>W0:</strong> `;
+            while (i < text.length) {
+                div.innerHTML = `<strong>W0:</strong> ${text.substring(0, i + 1).replace(/\n/g, '<br>')}`;
+                i++;
+                chat.scrollTop = chat.scrollHeight;
+                await new Promise(resolve => setTimeout(resolve, speed));
+            }
+
+            disableInput(false);
+            input.focus();
+        }
+
+        async function askNextQuestion() {
+            const typingInterval = showTypingDots();
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            clearInterval(typingInterval);
+            const typingDots = document.getElementById('typing-dots');
+            if (typingDots) typingDots.remove();
+
+            await typeWriterEffect(getRandomQuestion(currentQuestion));
+        }
+
+        async function askPersonalIntro(name) {
+            const typingInterval = showTypingDots();
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            clearInterval(typingInterval);
+            const typingDots = document.getElementById('typing-dots');
+            if (typingDots) typingDots.remove();
+
+            await typeWriterEffect(`ok ${name}, ma adesso voglio sapere anche un'altra cosa, un po più personale.`);
+        }
+
+        askNextQuestion(); // prima domanda
+
+        form.addEventListener('submit', async e => {
+            e.preventDefault();
+
+            const userText = input.value.trim();
+            if (!userText) return;
+
+            addMessage(userText, 'user');
+
+            if (currentQuestion === 0) answers.name = userText;
+            else if (currentQuestion === 1) answers.year = userText;
+            else if (currentQuestion === 2) answers.fear = userText;
+
+            input.value = '';
+            currentQuestion++;
+
+            if (currentQuestion === 2) {
+                await askPersonalIntro(answers.name);
+                await askNextQuestion();
+            } else if (currentQuestion < questionsVariations.length) {
+                await askNextQuestion();
+            } else {
+                document.getElementById('name').value = answers.name;
+                document.getElementById('year').value = answers.year;
+                document.getElementById('fear').value = answers.fear;
+
+                setTimeout(() => {
+                    form.submit();
+                }, 300);
+            }
+        });
+    </script>
+
+</body>
+</html>

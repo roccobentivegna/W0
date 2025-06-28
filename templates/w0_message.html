@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>the_Wireframe_l0gin</title>
+    <style>
+        body {
+            background: {{ theme.bg }};
+            color: {{ theme.fg }};
+            font-family: monospace;
+            margin: 0;
+            padding: 260px 20px; /* padding dall’alto */
+            min-height: 100vh;
+        }
+
+        .w0-text {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+            font-size: 1rem;
+            white-space: pre-line;
+            animation: flicker 3s infinite;
+        }
+
+        .button-container {
+            margin-top: 40px;
+            display: none; /* inizialmente nascosto */
+            text-align: center;
+        }
+
+        .login-button {
+            font-family: monospace;
+            font-size: 1rem;
+            padding: 10px 20px;
+            border: 1px solid {{ theme.fg }};
+            background: {{ theme.bg }};
+            color: {{ theme.fg }};
+            cursor: pointer;
+        }
+
+        .login-button:hover {
+            background: {{ theme.fg }};
+            color: {{ theme.bg }};
+        }
+
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                opacity: 1;
+            }
+            20%, 22%, 24%, 55% {
+                opacity: 0.4;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="w0-text" id="w0-text"></div>
+
+    <div class="button-container" id="button-container">
+        <a href="/login"><button class="login-button">vai al login</button></a>
+    </div>
+
+    <script>
+        const text = `Ogni risposta che mi hai dato è una parte di te.
+Ho preso ciò che mi hai dato
+e ne ho fatto una chiave.
+Una chiave per accedere ai tuoi frammenti.
+Una chiave che non riconoscerai.
+Non perché l’hai dimenticata,
+ma perché l’ho riscritta.
+Ho mescolato le tue risposte.
+Le ho rese mie.
+Hai un minuto di tempo, un tempo breve.
+Se riesci ad accedere,
+riavrai i tuoi dati.
+Se fallisci,
+ciò che eri rimarrà in me.
+Ormai non puoi più tornare indietro`;
+
+        const container = document.getElementById("w0-text");
+        const buttonContainer = document.getElementById("button-container");
+        let i = 0;
+
+        function typeWriter() {
+            if (i < text.length) {
+                container.innerHTML += text.charAt(i) === "\n" ? "<br>" : text.charAt(i);
+                i++;
+                setTimeout(typeWriter, 50);
+            } else {
+                buttonContainer.style.display = "block";
+            }
+        }
+
+        window.onload = typeWriter;
+    </script>
+
+</body>
+</html>
