@@ -19,6 +19,7 @@ THEMES = [
     {'bg': 'blue', 'fg': 'white'},
 ]
 
+
 @app.route('/')
 def index():
     # Scegli un tema casuale diverso dall'attuale, se c'è già
@@ -28,6 +29,7 @@ def index():
         new_theme = random.choice(THEMES)
     session['theme'] = new_theme
     return render_template('w0_intro.html', theme=new_theme)
+
 
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
@@ -48,6 +50,7 @@ def quiz():
         return redirect(url_for('message'))
 
     return render_template('quiz.html', theme=theme)
+
 
 @app.route('/message')
 def message():
@@ -86,6 +89,7 @@ def login():
 
     remaining_time = max(0, session['expiry'] - time.time())
     return render_template('login.html', error=False, remaining_time=remaining_time, theme=theme)
+
 
 @app.route('/secret')
 def secret():
